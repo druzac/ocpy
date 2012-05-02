@@ -2,8 +2,16 @@
 # comment...
 
 def foo(x): # I am defining something...
-    print ('''this is a\
-  #very good         \
-test mang!''')
+# zehr gut!\)
+
+"string ' # hullo \
+        ingy
+\
+        \"ing"
+and \
+what\
+the\
+hell
+
 
 foo(1)

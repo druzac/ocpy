@@ -16,13 +16,11 @@
  * '\012' is a form feed *)
 let white_space = [' ' '\009' '\012']
 let comment = '#' [^'\n']*
-let lit_string = '"' ( '\\' '"' | [^'"'])* '"'
 let squote = '\'' | '"'
 let lquote = "'''" | "\"\"\""
 
 rule start_line = parse
 | white_space* (comment?) '\n'        { start_line lexbuf}
-| lit_string as s                     { emit_s s; in_line lexbuf}
 | _                                   { emit_s (Lexing.lexeme lexbuf); in_line lexbuf}
                                             (* there are problems with this...
                                              * what if its a character we need
@@ -33,10 +31,10 @@ and in_line = parse
 | comment '\n'                        { emit_c '\n'; start_line lexbuf}
 | '\n'                                { emit_c '\n'; start_line lexbuf}
 | "\\\n"                              { in_line lexbuf}
-| lit_string as s                   { emit_s s; in_line lexbuf}
+| squote as quote                              { emit_c quote; s_string quote lexbuf }
 | _                                   { emit_s (Lexing.lexeme lexbuf); in_line lexbuf}
 
-(*and s_string quote_type = parse
+and s_string quote_type = parse
 (* special characters here to watch out for: the two quotes!*)
 | "\\\n"                              { s_string quote_type lexbuf }
 | '\n'                                { raise (Lex_Error "Unescaped newline in short string")}
@@ -52,7 +50,7 @@ and in_line = parse
                                         end}
 | _                                 { emit_s (Lexing.lexeme lexbuf); s_string quote_type lexbuf}
 | eof                               { raise (Lex_Error "EOF while scanning string")}   
-*)
+
 
 
 
