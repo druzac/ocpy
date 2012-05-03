@@ -1,17 +1,29 @@
 
 # comment...
 
-def foo(x): # I am defining something...
-# zehr gut!\)
 
-"string ' # hullo \
-        ingy
-\
-        \"ing"
-and \
-what\
-the\
-hell
+#print('string \' " # hullo \
+#        ingy\
+## wowee zoeww \
+#        \'ing')
 
+print(''' this is a big 
+test \'
+\''' ''\ # ''
+# mang!
+''')
 
-foo(1)
+print(""" this is a big 
+test \"
+\""" ""\ # ""
+# mang!
+""")
+
+l = [ 1, # this is a super test
+     [2],
+     {5:1,
+      3:7
+      }
+      ]
+print (l
+     )
