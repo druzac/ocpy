@@ -1,4 +1,4 @@
-# 3 "first_pass.mll"
+# 9 "first_pass.mll"
  
 
     exception End_of_file
@@ -174,47 +174,47 @@ let rec start_line lexbuf =
 and __ocaml_lex_start_line_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 60 "first_pass.mll"
+# 66 "first_pass.mll"
                                       ( start_line lexbuf)
 # 180 "first_pass.ml"
 
   | 1 ->
 let
-# 61 "first_pass.mll"
+# 67 "first_pass.mll"
              s
 # 186 "first_pass.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 61 "first_pass.mll"
+# 67 "first_pass.mll"
                                    ( emit_s s; in_line lexbuf)
 # 190 "first_pass.ml"
 
   | 2 ->
 let
-# 62 "first_pass.mll"
+# 68 "first_pass.mll"
           l
 # 196 "first_pass.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 62 "first_pass.mll"
+# 68 "first_pass.mll"
                                       ( emit_c l; process_left l; in_line lexbuf)
 # 200 "first_pass.ml"
 
   | 3 ->
 let
-# 63 "first_pass.mll"
+# 69 "first_pass.mll"
            r
 # 206 "first_pass.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 63 "first_pass.mll"
+# 69 "first_pass.mll"
                                       ( emit_c r; process_right r; in_line lexbuf)
 # 210 "first_pass.ml"
 
   | 4 ->
-# 64 "first_pass.mll"
+# 70 "first_pass.mll"
                                       ( emit_s (Lexing.lexeme lexbuf); in_line lexbuf)
 # 215 "first_pass.ml"
 
   | 5 ->
-# 65 "first_pass.mll"
+# 71 "first_pass.mll"
                                       ( raise End_of_file)
 # 220 "first_pass.ml"
 
@@ -225,12 +225,12 @@ and in_line lexbuf =
 and __ocaml_lex_in_line_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 68 "first_pass.mll"
+# 74 "first_pass.mll"
                                       ( in_line lexbuf)
 # 231 "first_pass.ml"
 
   | 1 ->
-# 69 "first_pass.mll"
+# 75 "first_pass.mll"
                               ( if can_continue ()
         then in_line lexbuf
         else 
@@ -241,47 +241,47 @@ and __ocaml_lex_in_line_rec lexbuf __ocaml_lex_state =
 # 242 "first_pass.ml"
 
   | 2 ->
-# 76 "first_pass.mll"
+# 82 "first_pass.mll"
                                       ( in_line lexbuf)
 # 247 "first_pass.ml"
 
   | 3 ->
 let
-# 77 "first_pass.mll"
+# 83 "first_pass.mll"
           l
 # 253 "first_pass.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 77 "first_pass.mll"
+# 83 "first_pass.mll"
                                       ( emit_c l; process_left l; in_line lexbuf)
 # 257 "first_pass.ml"
 
   | 4 ->
 let
-# 78 "first_pass.mll"
+# 84 "first_pass.mll"
            r
 # 263 "first_pass.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 78 "first_pass.mll"
+# 84 "first_pass.mll"
                                       ( emit_c r; process_right r; in_line lexbuf)
 # 267 "first_pass.ml"
 
   | 5 ->
 let
-# 79 "first_pass.mll"
+# 85 "first_pass.mll"
              s
 # 273 "first_pass.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 79 "first_pass.mll"
+# 85 "first_pass.mll"
                                  ( emit_s s; in_line lexbuf)
 # 277 "first_pass.ml"
 
   | 6 ->
-# 80 "first_pass.mll"
+# 86 "first_pass.mll"
                                       ( emit_s (Lexing.lexeme lexbuf); in_line lexbuf)
 # 282 "first_pass.ml"
 
   | 7 ->
-# 81 "first_pass.mll"
+# 87 "first_pass.mll"
                                       ( raise End_of_file)
 # 287 "first_pass.ml"
 
@@ -289,7 +289,7 @@ let
 
 ;;
 
-# 83 "first_pass.mll"
+# 89 "first_pass.mll"
  
 let rec parse lexbuf =
     let token = start_line lexbuf
@@ -307,6 +307,6 @@ let main () =
 
 let _ = print_string "Beginning to parse...\n"
 let _ = Printexc.print main ()
-let _ = Printf.printf "Finished Parsing"
+let _ = Printf.printf "Finished Parsing\n"
 
 # 313 "first_pass.ml"

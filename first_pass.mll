@@ -103,5 +103,5 @@ let main () =
 
 let _ = print_string "Beginning to parse...\n"
 let _ = Printexc.print main ()
-let _ = Printf.printf "Finished Parsing"
+let _ = Printf.printf "Finished Parsing\n"
 }
