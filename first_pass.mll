@@ -91,7 +91,7 @@ let rec parse lexbuf =
     let token = start_line lexbuf
     in
     (* do * nothing * in * this * example * *)
-    parse lexbuf
+    parse lexbuf; token
 
 let main () =
     let cin = 
@@ -101,7 +101,7 @@ let main () =
     try parse lexbuf
     with End_of_file -> ()
 
-let _ = print_string "Beginning to parse...\n"
+(*let _ = print_string "Beginning to parse...\n"*)
 let _ = Printexc.print main ()
-let _ = Printf.printf "Finished Parsing\n"
+(*let _ = Printf.printf "Finished Parsing\n"*)
 }

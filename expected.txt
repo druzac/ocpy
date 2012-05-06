@@ -1,4 +1,3 @@
-ocaml first_pass.ml < sample.py | ocaml tokenize.ml
 (KEYWORD def)
 (ID "fact")
 (PUNCT "(")
@@ -16,7 +15,7 @@ ocaml first_pass.ml < sample.py | ocaml tokenize.ml
 (NEWLINE)
 (INDENT)
 (KEYWORD return)
-(LIT 1.j)
+(LIT +1.i)
 (NEWLINE)
 (DEDENT)
 (KEYWORD elif)

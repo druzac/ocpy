@@ -1,3 +1,9 @@
+all1 : first_pass.ml tokenize.ml
+	ocaml first_pass.ml < basic.py | ocaml tokenize.ml
+
+sample : first_pass.ml tokenize.ml
+	ocaml first_pass.ml < sample.py | ocaml tokenize.ml
+
 test1 : first_pass.ml
 	ocaml first_pass.ml < basic.py
 
@@ -24,3 +30,5 @@ num: tokenize.ml
 
 string: tokenize.ml
 	ocaml tokenize.ml string.py
+
+
