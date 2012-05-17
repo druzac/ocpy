@@ -1,0 +1,9 @@
+parser.cmi: syntax.cmo
+calc.cmo: syntax.cmo parser.cmi lexer.cmo
+calc.cmx: syntax.cmx parser.cmx lexer.cmx
+lexer.cmo: parser.cmi
+lexer.cmx: parser.cmx
+parser.cmo: syntax.cmo parser.cmi
+parser.cmx: syntax.cmx parser.cmi
+syntax.cmo:
+syntax.cmx:

@@ -1,0 +1,5 @@
+parser.cmi: ast.cmo
+ast.cmo:
+ast.cmx:
+parser.cmo: ast.cmo parser.cmi
+parser.cmx: ast.cmx parser.cmi
