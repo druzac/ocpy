@@ -8,6 +8,8 @@
 
 /* whitespace/control symbols */
 %token NEWLINE INDENT DEDENT ENDMARKER
+%token <int> INDENT_SPACE  /* this is a special control symbol used by first
+lexer, error if seen by parser */
 
 /* keywords */
 %token FALSE CLASS FINALLY IS RETURN NONE CONTINUE FOR LAMBDA TRY TRUE DEF FROM NONLOCAL WHILE
@@ -23,7 +25,6 @@
 /* end punctuation */
 
 /* literals */
-%token TRUE FALSE
 %token <string> STRING
 %token <string> NAME
 %token <int> NUMBER

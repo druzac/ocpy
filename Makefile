@@ -1,34 +1,46 @@
-all1 : first_pass.ml tokenize.ml
-	ocaml first_pass.ml < basic.py | ocaml tokenize.ml
+OCAMLC=ocamlc 
+OCAMLOPT=ocamlopt
+OCAMLDEP=ocamldep
+INCLUDES=	#
+OCAMLFLAGS=$(INCLUDES)	#
+OCAMLOPTFLAGS=$(INCLUDES)
+# prog1 should be compiled to bytecode, and is composed of three # units: mod1, mod2 and mod3.
+# The list of object files for prog1 
+PROG1_OBJS=lexer.cmo parser.cmo main.cmo
 
-sample : first_pass.ml tokenize.ml
-	ocaml first_pass.ml < sample.py | ocaml tokenize.ml
+main: $(PROG1_OBJS) 
+	$(OCAMLC) -o main $(OCAMLFLAGS) $(PROG1_OBJS)
 
-test1 : first_pass.ml
-	ocaml first_pass.ml < basic.py
+test: main
+	./main < test.txt
 
-test2 : tokenize.ml
-	ocaml tokenize.ml < indent.py
+# Common rules 
 
-first_pass.ml : first_pass.mll
-	ocamllex first_pass.mll
+lexer.ml: lexer.mll
+	ocamllex lexer.mll
 
-tokenize.ml : tokenize.mll
-	ocamllex tokenize.mll
+parser.ml: parser.mly
+	ocamlyacc parser.mly
 
-run:
-	ocaml tokenize.ml
+parser.mli: parser.mly
+	ocamlyacc parser.mly
 
-keywords: tokenize.ml
-	ocaml tokenize.ml < keywords.py
+lexer.cmo: lexer.ml parser.cmi
+	$(OCAMLC) $(OCAMLFLAGS) -c lexer.ml
 
-punct: tokenize.ml
-	ocaml tokenize.ml punct.py
+.SUFFIXES: .ml .mli .cmo .cmi .cmx
 
-num: tokenize.ml
-	ocaml tokenize.ml num.py
-
-string: tokenize.ml
-	ocaml tokenize.ml string.py
-
+.mli.cmi:
+	$(OCAMLC) $(OCAMLFLAGS) -c $<
+.ml.cmo:
+	$(OCAMLC) $(OCAMLFLAGS) -c $<
+.ml.cmx:
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) -c $<
+# Clean up 
+clean:
+	rm -f *.cm[iox]
+# Dependencies 
+.depend:
+	$(OCAMLDEP) $(INCLUDES) *.mli *.ml > .depend 
+include .depend
 
