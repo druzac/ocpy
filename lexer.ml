@@ -301,7 +301,8 @@ let gen_lexer () =
     and l_paren_cnt = ref 0
     and l_bracket_cnt = ref 0 *)
     in
-    let rec returner token lexbuf =
+    let rec returner lex_fun lexbuf =
+        let token = lex_fun lexbuf in
         if token = NEWLINE (*&& do_print_nl () *)|| token != NEWLINE then
             begin 
                 last_token := token;
@@ -310,60 +311,52 @@ let gen_lexer () =
         else
             lex_wrapper lexbuf
     and lex_wrapper lexbuf = 
-        begin
+
         match !last_token with
         NEWLINE -> ws_pusher lexbuf
         | DEDENT -> ws_popper lexbuf
-        | _ -> 
-                let result = line_middle lexbuf in
-                (* this block should be the returner function *)
-                if result = NEWLINE (*&& do_print_nl () *)|| result != NEWLINE then
-                    begin 
-                        last_token := result;
-                        result
-                    end
-                else
-                    lex_wrapper lexbuf
-        end
-        and ws_pusher lexbuf =
-            (* line_start returns either INDENT_SPACE or ENDMARKER *)
-            match line_start lexbuf with
-            INDENT_SPACE c -> 
-                    if c > !curr_indent then 
-                        begin
-                            curr_indent := c;
-                            indent_stack := c::(!indent_stack); 
-                            returner INDENT lexbuf
-        end
-                    else if c = !curr_indent then returner (line_middle lexbuf) lexbuf
-                else ws_popper lexbuf
-            | ENDMARKER -> ENDMARKER
+        | _ -> returner line_middle lexbuf
 
-        and ws_popper lexbuf =
-            let stack_top = List.hd (!indent_stack) in
-            if stack_top > !curr_indent then raise Indent_Error
-            else if stack_top = !curr_indent then returner (line_middle lexbuf) lexbuf
-            else 
+    and ws_pusher lexbuf =
+        (* line_start returns either INDENT_SPACE or ENDMARKER *)
+        match line_start lexbuf with
+        INDENT_SPACE c -> 
+            if c > !curr_indent then 
                 begin
-                    indent_stack := List.tl (!indent_stack);
-                    returner DEDENT lexbuf
-                end
-    in
-    (fun lexbuf -> lex_wrapper lexbuf)
+                    curr_indent := c;
+                    indent_stack := c::(!indent_stack); 
+                    returner (fun x -> INDENT) lexbuf
+            end
+        else if c = !curr_indent then returner line_middle lexbuf
+            else begin curr_indent := c; ws_popper lexbuf end
+        | ENDMARKER -> ENDMARKER
+        | _ -> raise (Lex_Error "Line start returned neither INDENT_SPACE nor ENDMARKER")
 
-(*let rec parse lexbuf =
-    let token = line_start lexbuf
-    in
-    (* do * nothing * in * this * example * *)
-    parse lexbuf; token
+    and ws_popper lexbuf =
+        let stack_top = List.hd (!indent_stack) in
+        if stack_top < !curr_indent then raise Indent_Error
+        else if stack_top = !curr_indent then returner line_middle lexbuf
+        else 
+            begin
+                indent_stack := List.tl (!indent_stack);
+                returner (fun x -> DEDENT) lexbuf
+            end
+        in
+        (fun lexbuf -> lex_wrapper lexbuf)
+
+        (*let rec parse lexbuf =
+            let token = line_start lexbuf
+            in
+            (* do * nothing * in * this * example * *)
+            parse lexbuf; token
 
 let main () =
     let cin = 
         if Array.length Sys.argv > 1 then open_in Sys.argv.(1)
         else stdin in
-    let lexbuf = Lexing.from_channel cin in
-    try parse lexbuf
-    with End_of_file -> ()
+let lexbuf = Lexing.from_channel cin in
+try parse lexbuf
+with End_of_file -> ()
     *)
 
-# 370 "lexer.ml"
+# 363 "lexer.ml"

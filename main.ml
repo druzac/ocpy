@@ -11,8 +11,10 @@ let printer = function
   | ENDMARKER -> printf "(ENDMARKER)\n"
   | _ -> print_string "I don't know...\n"
 
+
+let lexer = Lexer.gen_lexer ();;
+
 let rec parse_then_print lexbuf =
-  let lexer = Lexer.gen_lexer () in
   let result = lexer lexbuf in
     printer result;
     if result = ENDMARKER then 
