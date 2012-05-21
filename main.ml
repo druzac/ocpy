@@ -9,8 +9,84 @@ let printer = function
   | STRING (s) -> printf "(STRING %s)\n" s
   | NAME (s) -> printf "(ID %s)\n" s
   | ENDMARKER -> printf "(ENDMARKER)\n"
+  | FALSE -> printf "(FALSE)\n"
+  | CLASS -> printf "(CLASS)\n"
+  | FINALLY -> printf "(FINALLY)\n"
+  | IS -> printf "(IS)\n"
+  | RETURN -> printf "(RETURN)\n"
+  | NONE -> printf "(NONE)\n"
+  | CONTINUE -> printf "(CONTINUE)\n"
+  | FOR -> printf "(FOR)\n"
+  | LAMBDA -> printf "(LAMBDA)\n"
+  | TRY -> printf "(TRY)\n"
+  | TRUE -> printf "(TRUE)\n"
+  | DEF -> printf "(DEF)\n"
+  | FROM -> printf "(FROM)\n"
+  | NONLOCAL -> printf "(NONLOCAL)\n"
+  | WHILE -> printf "(WHILE)\n"
+  | AND -> printf "(AND)\n"
+  | DEL -> printf "(DEL)\n"
+  | GLOBAL -> printf "(GLOBAL)\n"
+  | NOT -> printf "(NOT)\n"
+  | WITH -> printf "(WITH)\n"
+  | AS -> printf "(AS)\n"
+  | ELIF -> printf "(ELIF)\n"
+  | IF -> printf "(IF)\n"
+  | OR -> printf "(OR)\n"
+  | YIELD -> printf "(YIELD)\n"
+  | ASSERT -> printf "(ASSERT)\n"
+  | ELSE -> printf "(ELSE)\n"
+  | IMPORT -> printf "(IMPORT)\n"
+  | PASS -> printf "(PASS)\n"
+  | BREAK -> printf "(BREAK)\n"
+  | EXCEPT -> printf "(EXCEPT)\n"
+  | IN -> printf "(IN)\n"
+  | RAISE -> printf "(RAISE)\n"
+  | PLUS -> printf "(PLUS)\n"
+  | MINUS -> printf "(MINUS)\n"
+  | STAR -> printf "(STAR)\n"
+  | DSTAR -> printf "(DSTAR)\n"
+  | SLASH -> printf "(SLASH)\n"
+  | DSLASH -> printf "(DSLASH)\n"
+  | PERCENT -> printf "(PERCENT)\n"
+  | DLT -> printf "(DLT)\n"
+  | DGT -> printf "(DGT)\n"
+  | AMP -> printf "(AMP)\n"
+  | PIPE -> printf "(PIPE)\n"
+  | CARET -> printf "(CARET)\n"
+  | TILDE -> printf "(TILDE)\n"
+  | LT -> printf "(LT)\n"
+  | GT -> printf "(GT)\n"
+  | LTEQ -> printf "(LTEQ)\n"
+  | GTEQ -> printf "(GTEQ)\n"
+  | DEQ -> printf "(DEQ)\n"
+  | NOTEQ -> printf "(NOTEQ)\n"
+  | LPAREN -> printf "(LPAREN)\n"
+  | RPAREN -> printf "(RPAREN)\n"
+  | LBRACKET -> printf "(LBRACKET)\n"
+  | RBRACKET -> printf "(RBRACKET)\n"
+  | LBRACE -> printf "(LBRACE)\n"
+  | RBRACE -> printf "(RBRACE)\n"
+  | COMMA -> printf "(COMMA)\n"
+  | COLON -> printf "(COLON)\n"
+  | DOT -> printf "(DOT)\n"
+  | SEMICOLON -> printf "(SEMICOLON)\n"
+  | ATSYM -> printf "(ATSYM)\n"
+  | EQ -> printf "(EQ)\n"
+  | PLUSEQ -> printf "(PLUSEQ)\n"
+  | MINUSEQ -> printf "(MINUSEQ)\n"
+  | STAREQ -> printf "(STAREQ)\n"
+  | SLASHEQ -> printf "(SLASHEQ)\n"
+  | DSLASHEQ -> printf "(DSLASHEQ)\n"
+  | PERCENTEQ -> printf "(PERCENTEQ)\n"
+  | AMPEQ -> printf "(AMPEQ)\n"
+  | PIPEEQ -> printf "(PIPEEQ)\n"
+  | CARETEQ -> printf "(CARETEQ)\n"
+  | DGTEQ -> printf "(DGTEQ)\n"
+  | DLTEQ -> printf "(DLTEQ)\n"
+  | DSTAREQ -> printf "(DSTAREQ)\n"
+  | ELLIPSIS -> printf "(ELLIPSIS)\n"
   | _ -> print_string "I don't know...\n"
-
 
 let lexer = Lexer.gen_lexer ();;
 
@@ -32,4 +108,11 @@ let main () =
     try parse_then_print lexbuf
     with End_of_file -> ()
 
-let _ = main ()
+(*let _ = main ()*)
+
+let ast_tree = 
+  let lexbuf = Lexing.from_channel stdin in
+    Parser.start lexer lexbuf
+
+let _ = Ast.print_sexp (Ast.get_sexp ast_tree)
+let _ = print_string "\n"

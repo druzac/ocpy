@@ -44,18 +44,18 @@ type token =
   | SLASH
   | DSLASH
   | PERCENT
-  | DBCHEVRON
-  | DFCHEVRON
+  | DLT
+  | DGT
   | AMP
   | PIPE
   | CARET
   | TILDE
-  | BCHEVRON
-  | FCHEVRON
+  | LT
+  | GT
   | LTEQ
   | GTEQ
-  | EQEQ
-  | EXEQ
+  | DEQ
+  | NOTEQ
   | LPAREN
   | RPAREN
   | LBRACKET
@@ -69,7 +69,7 @@ type token =
   | ATSYM
   | EQ
   | PLUSEQ
-  | MINEQ
+  | MINUSEQ
   | STAREQ
   | SLASHEQ
   | DSLASHEQ
@@ -77,8 +77,8 @@ type token =
   | AMPEQ
   | PIPEEQ
   | CARETEQ
-  | DFCHEVRONEQ
-  | DBCHEVRONEQ
+  | DGTEQ
+  | DLTEQ
   | DSTAREQ
   | ELLIPSIS
   | STRING of (string)

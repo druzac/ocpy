@@ -17,11 +17,11 @@
 /* end keywords */
 
 /* punctuation */
-%token PLUS MINUS STAR DSTAR SLASH DSLASH PERCENT DBCHEVRON DFCHEVRON AMP
-%token PIPE CARET TILDE BCHEVRON FCHEVRON LTEQ GTEQ EQEQ EXEQ
+%token PLUS MINUS STAR DSTAR SLASH DSLASH PERCENT DLT DGT AMP
+%token PIPE CARET TILDE LT GT LTEQ GTEQ DEQ NOTEQ
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
-%token COMMA COLON DOT SEMICOLON ATSYM EQ PLUSEQ MINEQ STAREQ SLASHEQ DSLASHEQ
-%token PERCENTEQ AMPEQ PIPEEQ CARETEQ DFCHEVRONEQ DBCHEVRONEQ DSTAREQ ELLIPSIS
+%token COMMA COLON DOT SEMICOLON ATSYM EQ PLUSEQ MINUSEQ STAREQ SLASHEQ DSLASHEQ
+%token PERCENTEQ AMPEQ PIPEEQ CARETEQ DGTEQ DLTEQ DSTAREQ ELLIPSIS
 /* end punctuation */
 
 /* literals */
@@ -38,52 +38,8 @@
 %%  
 
 /* we need to get a run just to see our status... */
-start:  atoms ENDMARKER  { Ast.Program (List.rev $1) }
-     |  ENDMARKER             { Ast.Program [] }
-
-/*
-stmts:
-    stmt_item stmts { $1::$2}
-    | stmt_item {$1}
-
-    */
-    atoms:  atom { [$1] }
-    | atoms COMMA atom  { $3::$1}
-
-
-atom: 
-    /*LPAREN RPAREN
-| LPAREN arglist RPAREN
-| LBRACKET RBRACKET
-| LBRACKET testlist RBRACKET
-| LBRACE RBRACE
-| LBRACE dictorsetmaker RBRACE
-*/
-
- NAME          {Ast.Name $1}
- 
-| NUMBER        { Ast.Number $1}
-| strings      { Ast.String $1} 
-| ELLIPSIS      { Ast.Ellipsis}
-| NONE          {Ast.None}
-| TRUE          { Ast.True}
-| FALSE         { Ast.False}
-
-strings: strings STRING { $1 ^ $2 }
-| STRING  { $1 }
-
-/*
-testlist:   leave blank 
-
-arglist:  leave blank for now 
-*/
-
-/*
-finputs: finputs finput { if $2 = NEWLINE then $1 else $2 :: $1}
-| finput              { $1 }     
-
-finput: NEWLINE     { $1 }
-| expr               { Exp (List.rev $1)}
+start:  stmts ENDMARKER  { Ast.Program (List.rev $1) }
+     /* |  NEWLINE ENDMARKER             { Ast.Program [] } */
 
 expr: expr PIPE xor_expr  { }
     | xor_expr     {    }
@@ -112,8 +68,6 @@ term_op: STAR
 | PERCENT
 | FSLASH
 
-*/
-/*
 factor: factor_op factor
 | power
 
@@ -132,4 +86,46 @@ trailer: LPAREN RPAREN
 
 power: indexed  { }
 | indexed DSTAR factor {}
+
+atoms:  atom { [$1] }
+| atoms COMMA atom  { $3::$1}
+
+
+atom: 
+    /*LPAREN RPAREN
+| LPAREN arglist RPAREN
+| LBRACKET RBRACKET
+| LBRACKET testlist RBRACKET
+| LBRACE RBRACE
+| LBRACE dictorsetmaker RBRACE
 */
+
+ NAME          {Ast.Name $1}
+| NUMBER        { Ast.Number $1}
+| strings      { Ast.String $1} 
+| ELLIPSIS      { Ast.Ellipsis}
+| NONE          {Ast.None}
+| TRUE          { Ast.True}
+| FALSE         { Ast.False}
+
+strings: strings STRING { $1 ^ $2 }
+| STRING  { $1 }
+
+/*
+testlist:   leave blank 
+
+arglist:  leave blank for now 
+
+finputs: finputs finput { if $2 = NEWLINE then $1 else $2 :: $1}
+| finput              { $1 }     
+
+finput: NEWLINE     { $1 }
+| expr               { Exp (List.rev $1)}
+*/
+
+/*
+stmts:
+    stmt_item stmts {$1::$2}
+    | stmt_item {$1}
+
+    */

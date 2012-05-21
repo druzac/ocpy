@@ -4,17 +4,13 @@ OCAMLDEP=ocamldep
 INCLUDES=	#
 OCAMLFLAGS=$(INCLUDES)	#
 OCAMLOPTFLAGS=$(INCLUDES)
-# prog1 should be compiled to bytecode, and is composed of three # units: mod1, mod2 and mod3.
-# The list of object files for prog1 
-PROG1_OBJS=lexer.cmo parser.cmo main.cmo
+PROG1_OBJS=lexer.cmo parser.cmo ast.cmo main.cmo 
 
 main: $(PROG1_OBJS) 
-	$(OCAMLC) -o main $(OCAMLFLAGS) $(PROG1_OBJS)
+	$(OCAMLC) -o main -I `ocamlfind query sexplib` unix.cma bigarray.cma nums.cma sexplib.cma $(OCAMLFLAGS) $(PROG1_OBJS)
 
 test: main
 	./main < test.txt
-
-# Common rules 
 
 lexer.ml: lexer.mll
 	ocamllex lexer.mll
@@ -27,6 +23,9 @@ parser.mli: parser.mly
 
 lexer.cmo: lexer.ml parser.cmi
 	$(OCAMLC) $(OCAMLFLAGS) -c lexer.ml
+
+ast.cmo:
+	ocamlc -c -pp "camlp4o -I `ocamlfind query type-conv` -I `ocamlfind query sexplib` pa_type_conv.cma pa_sexp_conv.cma" unix.cma bigarray.cma nums.cma -I `ocamlfind query sexplib` sexplib.cma str.cma ast.ml
 
 .SUFFIXES: .ml .mli .cmo .cmi .cmx
 
@@ -42,5 +41,9 @@ clean:
 # Dependencies 
 .depend:
 	$(OCAMLDEP) $(INCLUDES) *.mli *.ml > .depend 
+
+undepend:
+	rm .depend
+
 include .depend
 

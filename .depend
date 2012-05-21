@@ -1,5 +1,7 @@
-parser.cmi:
-first_pass.cmo:
-first_pass.cmx:
-parser.cmo: parser.cmi
-parser.cmx: parser.cmi
+parser.cmi: ast.cmo
+lexer.cmo: parser.cmi
+lexer.cmx: parser.cmx
+main.cmo: parser.cmi lexer.cmo ast.cmo
+main.cmx: parser.cmx lexer.cmx ast.cmx
+parser.cmo: ast.cmo parser.cmi
+parser.cmx: ast.cmx parser.cmi

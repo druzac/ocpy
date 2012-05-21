@@ -1,4 +1,6 @@
-type program = Program of atom list
+open Sexplib.Std
+
+type program = Program of expr list
 (*and funcdef = DEF of string list * suite
 and stmt = SIMPLE_STMT of simple_stmt | COMPOUND_STMT of compound_stmt
 and simple_stmt = SINGLE of small_stmt | BEGIN of small_stmt list
@@ -33,6 +35,7 @@ and atom = (*T_OR_T of tuple_or_test | TUPLE of tuple
          |  False
 and number = int
 and trailer = unit
+                with sexp
 (*and trailer = CALLED of arglist 
             |  SUBSCRIPT of tuple_or_test
             |  DOT of string
@@ -41,3 +44,9 @@ and testlist = test list
 and dict = (test * test) list 
 and set = SSET of test list
 and arglist = ARGLIST of test list   *)
+let get_sexp p = sexp_of_program p
+
+let rec print_sexp = function
+    Sexplib.Sexp.List l -> print_string "("; List.iter print_sexp l; print_string ")"; 
+  | Sexplib.Sexp.Atom a -> print_string a; print_string " "; 
+
