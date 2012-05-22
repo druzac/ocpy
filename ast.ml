@@ -1,12 +1,27 @@
 open Sexplib.Std
 
-type program = Program of arith_expr list
-(*and funcdef = DEF of string list * suite
-and stmt = SIMPLE_STMT of simple_stmt | COMPOUND_STMT of compound_stmt
-and simple_stmt = SINGLE of small_stmt | BEGIN of small_stmt list
-and small_stmt = EXPR
-                   ...*)
-
+type program = Program of stmt list
+(*and funcdef = Def of (string list) * suite*)
+and stmt = Smpl_stmt of simple_stmt 
+  (* | Cmpnd_stmt of compound_stmt*)
+and simple_stmt = Single of small_stmt 
+  (*| Begin of small_stmt list*)
+and small_stmt = Expr_stmt of expr_stmt
+                                (* more to come.... *)
+and expr_stmt = Assignment of assign_op * (test list) * tuple_or_test
+  | ToT of tuple_or_test
+and assign_op = Pluseq | Minuseq | Stareq | Slasheq | Percenteq
+| Ampeq | Pipeeq | Careteq | Dlteq | Dgteq | Dstareq | Dslasheq
+             (* lots of stuff missing here... *)
+and test = If_test of or_test * or_test * (test list)
+  | Or_test of or_test
+  (* lambdadef *)
+and or_test = Or of and_test list
+and and_test = And of not_test list
+and not_test = Comp of comparison | Not of not_test
+and comparison = Cmp_star_exp of star_exp | Cmp_cmp of star_exp * (comp_op * star_exp) list
+and comp_op = LT | GT | EQEQ | GTEQ | LTEQ | LTGT | NOTEQ | IN | NOTIN | IS | ISNOT
+and star_expr = Starexp_exp of expr | Starexp_sexp of expr
 and expr = Exp of xor_expr list
 and xor_expr = Xor_exp of and_expr list
 and and_expr = And_exp of shift_expr list

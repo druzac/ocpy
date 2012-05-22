@@ -47,8 +47,50 @@ exception Parse_error of string
 %%  
 
 start:  
-arith_exprs NEWLINE ENDMARKER          { Ast.Program (List.rev $1) }
+stmts ENDMARKER          { Ast.Program (List.rev $1) }
 |  ENDMARKER           { Ast.Program [] } 
+
+stmts: stmts stmt  { $2 :: $1 }
+| stmt {[$1]}
+
+stmt: simple_stmt { Smpl_stmt $1}
+
+simple_stmt: small_stmt { Single $1 }
+
+small_stmt: expr_stmt { Expr_stmt $1 }
+
+expr_stmt: testlist assign_op testlist { 
+| tuple_or_test 
+
+assign_op = PLUSEQ       { Pluseq}
+| MINUSEQ      {Minuseq}
+| STAREQ      {Stareq}
+| SLASHEQ      {Slasheq}
+| PERCENTEQ      {Percenteq}
+| AMPEQ      {Ampeq}
+| PIPEEQ      {Pipeeq}
+| CARETEQ      {Careteq}
+| DLTEQ      {Dlteq}
+| DGTEQ      {Dgteq}
+| DSTAREQ      {Dstareq}
+| DSLASHEQ      {Dslasheq}
+
+testlist: testseq COMMA { $1 }
+| testseq {$1}
+
+testseq: testseq COMMA test { $3 :: $1 }
+| test                      { [$1] }
+
+test: or_tests IF or_tests ELSE test { If_test ($1, $3, $5)}
+| or_tests                          { Or_test $1}
+
+or_tests: or_tests OR and_tests { $3 :: $1 }
+| and_tests      { [$1]}
+
+and_tests: and_tests AND not_tests { $3 :: $1}
+| not_tests {[$1]}
+
+not_tests:
 
 arith_exprs: 
 /*arith_exprs arith_expr {$2 :: $1}
