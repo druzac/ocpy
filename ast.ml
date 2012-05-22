@@ -1,6 +1,6 @@
 open Sexplib.Std
 
-type program = Program of expr list
+type program = Program of arith_expr list
 (*and funcdef = DEF of string list * suite
 and stmt = SIMPLE_STMT of simple_stmt | COMPOUND_STMT of compound_stmt
 and simple_stmt = SINGLE of small_stmt | BEGIN of small_stmt list
