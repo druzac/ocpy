@@ -1,0 +1,13 @@
+(Program ((Arith 
+
+(Term (Power (Pow_index (IndAtom (Number 1 )())))
+((Star (Power (Pow_index (IndAtom (Number 5 )()))))
+ (Star (Power (Pow_index (IndAtom (Number 4 )()))))
+ (Star (Power (Pow_index (IndAtom (Number 3 )()))))
+ (Star (Power (Pow_index (IndAtom (Number 2 )()))))))
+())))
+
+
+(testlist       (seq (seq test (rep (seq "," test))) (opt ",")))
+(tuple_or_test  (seq test (rep (seq "," test)) (opt ",")))
+

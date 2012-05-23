@@ -59,10 +59,14 @@ simple_stmt: small_stmt { Single $1 }
 
 small_stmt: expr_stmt { Expr_stmt $1 }
 
-expr_stmt: testlist assign_op testlist { 
-| tuple_or_test 
 
-assign_op = PLUSEQ       { Pluseq}
+/* the second rule is supposed to be a tuple_or_test, but those look
+exactly like testlists to me */
+
+expr_stmt: testlist assign_op testlist {Assignment ($2, $1, $3)}
+| testlist                        {Expr $1}
+
+assign_op: PLUSEQ       { Pluseq}
 | MINUSEQ      {Minuseq}
 | STAREQ      {Stareq}
 | SLASHEQ      {Slasheq}
@@ -74,6 +78,7 @@ assign_op = PLUSEQ       { Pluseq}
 | DGTEQ      {Dgteq}
 | DSTAREQ      {Dstareq}
 | DSLASHEQ      {Dslasheq}
+| EQ            {Eq}
 
 testlist: testseq COMMA { $1 }
 | testseq {$1}
@@ -81,22 +86,52 @@ testlist: testseq COMMA { $1 }
 testseq: testseq COMMA test { $3 :: $1 }
 | test                      { [$1] }
 
-test: or_tests IF or_tests ELSE test { If_test ($1, $3, $5)}
-| or_tests                          { Or_test $1}
+test: or_test IF or_test ELSE test { If_test ($1, $3, $5)}
+| or_test                          { Or_test $1}
+/* add lambdadef here */
 
-or_tests: or_tests OR and_tests { $3 :: $1 }
-| and_tests      { [$1]}
+or_test: or_test OR and_test { let Or(l) = $1 in Or($3::l) }
+| and_test      { Or[$1] }
 
-and_tests: and_tests AND not_tests { $3 :: $1}
-| not_tests {[$1]}
+and_test: and_test AND not_test {let And(l) = $1 in And($3::l)}
+| not_test {And([$1])}
 
-not_tests:
+not_test: NOT not_test        {Not $2}
+| comparison                    {Comp $1}
 
-arith_exprs: 
-/*arith_exprs arith_expr {$2 :: $1}
-| arith_exprs NEWLINE { $1 }
-*/
-arith_expr  { let Arith(t, l) = $1 in [Arith(t, List.rev l)] }
+comparison: comparison comp_op star_expr  { let Cmp_cmp(stexp, l) = $1 in Cmp_cmp(stexp, ($2, $3)::l)}
+| star_expr                               {Cmp_cmp($1, [])}
+
+/* python doesn't have <> ? */
+comp_op:
+LT          {Lt}
+| GT        {Gt}
+| DEQ       {Eqeq}
+| GTEQ      {Gteq}
+| LTEQ      {Lteq}
+| NOTEQ     {Noteq}
+| IN        {In}
+| NOT IN    {Notin}
+| IS        {Is}
+| IS NOT    {Isnot}
+
+star_expr: STAR expr   {Sexp_sexp $2}
+| expr                {Sexp_exp $1}
+
+expr: expr PIPE xor_expr    {let Exp(l) = $1 in Exp($3::l)}
+|xor_expr                   {Exp([$1]) }
+
+xor_expr: xor_expr CARET and_expr   { let Xor_exp(l) = $1 in Xor_exp($3::l)}
+| and_expr                          { Xor_exp([$1])}
+
+and_expr: and_expr AMP shift_expr { let And_exp(l) = $1 in And_exp($3::l)}
+| shift_expr                      {And_exp([$1])}
+
+shift_expr: shift_expr shift_op arith_expr  {let Shift(a, l) = $1 in Shift(a, ($2,$3)::l)}
+| arith_expr                                {Shift($1, [])}
+
+shift_op: DLT       {Dlt}
+| DGT               {Dgt}
 
 arith_expr: 
 arith_expr PLUS term           { let Arith(t, l) = $1 in Arith(t, (Plus,$3)::l)}
