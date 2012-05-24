@@ -6,9 +6,13 @@ OCAMLFLAGS=$(INCLUDES)	#
 OCAMLOPTFLAGS=$(INCLUDES)
 PROG1_OBJS=lexer.cmo parser.cmo ast.cmo main.cmo 
 
-main: $(PROG1_OBJS) 
-	$(OCAMLC) -o main -I `ocamlfind query sexplib` unix.cma bigarray.cma nums.cma sexplib.cma $(OCAMLFLAGS) $(PROG1_OBJS)
+#ast.cmo:
+	#ocamlc -c -pp "camlp4o -I `ocamlfind query type-conv` -I `ocamlfind query sexplib` pa_type_conv.cma pa_sexp_conv.cma" unix.cma bigarray.cma nums.cma -I `ocamlfind query sexplib` sexplib.cma str.cma ast.ml 
 
+main: $(PROG1_OBJS) 
+	$(OCAMLC) -o main $(OCAMLFLAGS) $(PROG1_OBJS) 
+
+#-I `ocamlfind query sexplib` unix.cma bigarray.cma nums.cma sexplib.cma
 test: main
 	./main < test.txt
 
@@ -23,9 +27,6 @@ parser.mli: parser.mly
 
 lexer.cmo: lexer.ml parser.cmi
 	$(OCAMLC) $(OCAMLFLAGS) -c lexer.ml
-
-ast.cmo:
-	ocamlc -c -pp "camlp4o -I `ocamlfind query type-conv` -I `ocamlfind query sexplib` pa_type_conv.cma pa_sexp_conv.cma" unix.cma bigarray.cma nums.cma -I `ocamlfind query sexplib` sexplib.cma str.cma ast.ml
 
 .SUFFIXES: .ml .mli .cmo .cmi .cmx
 

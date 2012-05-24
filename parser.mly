@@ -53,7 +53,10 @@ stmts ENDMARKER          { Ast.Program (List.rev $1) }
 stmts: stmts stmt  { $2 :: $1 }
 | stmt {[$1]}
 
-stmt: simple_stmt { Smpl_stmt $1}
+stmt: simple_stmt_wrapper { Smpl_stmt $1}
+
+simple_stmt_wrapper: simple_stmt SEMICOLON NEWLINE { $1 }
+| simple_stmt NEWLINE                              {$1}
 
 simple_stmt: small_stmt { Single $1 }
 
@@ -161,7 +164,6 @@ indexed:
 | atom  { IndAtom ($1, []) } */
 atom { IndAtom ($1, [])}
 
-
 /*
 trailer: LPAREN RPAREN
 | LPAREN arglist RPAREN
@@ -193,40 +195,3 @@ atom:
 
 strings: strings STRING { $1 ^ $2 }
 | STRING  { $1 }
-
-/*
-testlist:   leave blank 
-
-arglist:  leave blank for now 
-
-finputs: finputs finput { if $2 = NEWLINE then $1 else $2 :: $1}
-| finput              { $1 }     
-
-finput: NEWLINE     { $1 }
-| expr               { Exp (List.rev $1)}
-*/
-
-/*
-stmts:
-    stmt_item stmts {$1::$2}
-    | stmt_item {$1}
-
-    */
-/*
-exprs: exprs expr { $2 :: $1}
- | expr       { 
-
-expr: expr PIPE xor_expr  { }
-    | xor_expr     {    }
-
-    xor_expr: xor_expr CARET and_expr { }
-| and_expr   { And_exp $1}
-
-and_expr: and_expr AMP shift_expr {}
-| shift_expr { Shift ($1, [])}
-
-shift_expr: shift_expr DFCHEVRON arith_expr { }
-| shift_expr DBCHEVRON arith_expr { }
-| arith_expr 
-
-*/
