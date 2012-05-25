@@ -12,6 +12,9 @@ PROG1_OBJS=lexer.cmo parser.cmo ast.cmo main.cmo
 main: $(PROG1_OBJS) 
 	$(OCAMLC) -o main $(OCAMLFLAGS) $(PROG1_OBJS) 
 
+run: main
+	ocaml $(PROG1_OBJS)
+
 #-I `ocamlfind query sexplib` unix.cma bigarray.cma nums.cma sexplib.cma
 test: main
 	./main < test.txt

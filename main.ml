@@ -88,9 +88,9 @@ let printer = function
   | ELLIPSIS -> printf "(ELLIPSIS)\n"
   | _ -> print_string "I don't know...\n"
 
-let lexer = Lexer.gen_lexer ();;
+(*let lexer = Lexer.gen_lexer ();;*)
 
-let rec parse_then_print lexbuf =
+(*let rec parse_then_print lexbuf =
   let result = lexer lexbuf in
     printer result;
     if result = ENDMARKER then 
@@ -107,12 +107,18 @@ let main () =
   let lexbuf = Lexing.from_channel cin in
     try parse_then_print lexbuf
     with End_of_file -> ()
-
+ *)
 (*let _ = main ()*)
 
-let ast_tree = 
+(*let ast_tree = 
+  let lexbuf = Lexing.from_channel stdin in
+    Parser.start lexer lexbuf
+ *)
+
+let parse () =
+  let lexer = Lexer.gen_lexer () in
   let lexbuf = Lexing.from_channel stdin in
     Parser.start lexer lexbuf
 
 (*let _ = Ast.print_sexp (Ast.get_sexp ast_tree)*)
-let _ = print_string "\n"
+(*let _ = print_string "\n"*)
