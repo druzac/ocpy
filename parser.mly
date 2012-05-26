@@ -66,8 +66,14 @@ small_stmt: expr_stmt { Expr_stmt $1 }
 /* the second rule is supposed to be a tuple_or_test, but those look
 exactly like testlists to me */
 
-expr_stmt: testlist assign_op testlist {Assignment ($2, $1, $3)}
-| testlist                        {Expr $1}
+expr_stmt: testlist assign_op tuple_or_test {Assignment ($2, $1, $3)}
+| tuple_or_test                        {Expr $1}
+
+tuple_or_test: t_o_t COMMA { $1 }
+| t_o_t                    { $1}
+
+t_o_t: t_o_t COMMA test  { match $1 with Test t -> Tuple ($3 ::[t]) | Tuple l ->Tuple ($3 :: l)}
+| test                   { Test $1}
 
 assign_op: PLUSEQ       { Pluseq}
 | MINUSEQ      {Minuseq}
@@ -153,39 +159,33 @@ term_op: STAR  {Star}
 | DSLASH        {Dfslash}  
 
 factor: factor_op factor { Uapp ($1, $2) }
-| power                  { Power $1}
+| power                  { F_Pow $1}
 
 factor_op: PLUS { Uplus }
 | MINUS  { Uminus }
 | TILDE  { Utilde}
 
 indexed:
-/* indexed trailer   
-| atom  { IndAtom ($1, []) } */
-atom { IndAtom ($1, [])}
+indexed trailer             {match $1 with Atom a -> Power (a, $2) | Power (a, l) -> (a, $2::l)}
+| atom                      {Atom $1}
 
-/*
-trailer: LPAREN RPAREN
-| LPAREN arglist RPAREN
-| LBRACKET RBRACKET
-| LBRACKET tuple_or_test RBRACKET
-| DOT NAME
-*/
-
+trailer: LPAREN RPAREN      { Called []}
+| LPAREN arglist RPAREN     {Called $2}
+| LBRACKET RBRACKET         {Subscript (Tuple [])}
+| LBRACKET tuple_or_test RBRACKET   {Subscript $2} 
+| DOT NAME                          {Dot $2}
 
 power: indexed  {Pow_index $1 }
 | indexed DSTAR factor { Pow_factor ($1, $3)}
 
 atom: 
-    /*LPAREN RPAREN
-| LPAREN arglist RPAREN
-| LBRACKET RBRACKET
-| LBRACKET testlist RBRACKET
-| LBRACE RBRACE
+LPAREN RPAREN                   {A_tot (Tuple [])}
+| LPAREN arglist RPAREN         {A_tot $2}
+| LBRACKET RBRACKET             {A_testlist []}
+| LBRACKET testlist RBRACKET    {A_testlist $2}
+| LBRACE RBRACE                 {A_d
 | LBRACE dictorsetmaker RBRACE
-*/
-
- NAME          {Ast.Name $1}
+| NAME          {Ast.Name $1}
 | NUMBER        { Ast.Number $1}
 | strings      { Ast.String $1} 
 | ELLIPSIS      { Ast.Ellipsis}

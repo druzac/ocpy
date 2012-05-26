@@ -12,9 +12,9 @@ and small_stmt = Expr_stmt of expr_stmt
   | Global_stmt of global_stmt
   | Nonlocal_stmt of nonlocal_stmt
   | Assert_stmt of assert_stmt
-and expr_stmt = Assignment of assign_op * (test list) * (test list) (*this is supposed to be a tuple_or_test*)
-  | Expr of test list
-(*and tuple_or_test = Test of test | Tuple of test list *)
+and expr_stmt = Assignment of assign_op * (test list) * tuple_or_test (*this is supposed to be a tuple_or_test*)
+  | Expr of tuple_or_test
+
 and assign_op = Pluseq | Minuseq | Stareq | Slasheq | Percenteq
 | Ampeq | Pipeeq | Careteq | Dlteq | Dgteq | Dstareq | Dslasheq
 | Eq
@@ -65,9 +65,9 @@ and arith_expr = Arith of term * (arith_op * term) list
 and arith_op = Plus | Minus
 and term = Term of factor * (factor_op * factor) list
 and factor_op = Star | Fslash | Percent | Dfslash
-and factor = Power of power | Uapp of unary_op * factor
+and factor = F_Pow of power | Uapp of unary_op * factor
 and unary_op = Uplus | Uminus | Utilde
-and indexed = IndAtom of atom * trailer list
+and indexed = Atom of atom | Power of atom * (trailer list)
 and power = Pow_index of indexed | Pow_factor of indexed * factor
 and atom = (*T_OR_T of tuple_or_test | TUPLE of tuple
          |  T_LST of testlist
@@ -81,8 +81,15 @@ and atom = (*T_OR_T of tuple_or_test | TUPLE of tuple
          |  True
          |  False
 and number = int
-and trailer = unit
-                (*with sexp*)
+and trailer = Called of arglist
+| Subscript of tuple_or_test
+| Dot of string
+and testlist =  test list
+and tuple_or_test = Test of test | Tuple of test list 
+and dict = Dict of (test * test) list
+and set = Set of test list
+and arglist = testlist
+               (*with sexp*)
 (*and trailer = CALLED of arglist 
             |  SUBSCRIPT of tuple_or_test
             |  DOT of string
