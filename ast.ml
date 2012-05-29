@@ -31,7 +31,7 @@ and small_stmt =
   | Assert of test list
 and assign_op = Pluseq | Minuseq | Stareq | Slasheq | Percenteq
 		| Ampeq | Pipeeq | Careteq | Dlteq | Dgteq | Dstareq | Dslasheq
-		| Eq
+ 		| Eq
 and test = If_test of or_test * or_test * test
 	   | Or_test of or_test
 	   | Lambda of (string list) * test
@@ -90,6 +90,10 @@ let testlist_add test tlist =
 let testlist_fin tlist =
   List.rev tlist
 
+let testlist_to_tot = function
+    [t] -> Test t
+  | l -> Tuple (List.rev l)
+
 let dict_add key value dict =
   (key, value)::dict
 
@@ -114,7 +118,6 @@ let arith_fin = function
   Arith(t, summands) -> Arith(t, List.rev summands)
 
 let arith_new term = Arith (term_fin term, [])
-
 
 let shift_add shift_op arith_expr = function
   Shift(aexp, shifts) -> Shift(aexp, (shift_op, arith_fin arith_expr)::shifts)
@@ -172,3 +175,73 @@ let lor_add a_tst = function Or(atsts) -> Or(a_tst::atsts)
 
 let lor_fin = function
     Or(ats) -> Or(List.rev ats)
+
+let while_fin tsuite suite_op =
+  match tsuite with (t,s) -> While(t,s, suite_op)
+
+let for_fin str_test_suite suite_op =
+  match str_test_suite with (str,test,s) -> For (str, test, s, suite_op)
+
+let excepts_elfin catch_sts el_fin =
+  match el_fin with (sop1, sop2) -> (List.rev catch_sts, sop1, sop2)
+
+let try_fin suite = function
+  (a,b,c) -> Try (suite,a,b,c)
+
+(* forget the printer... this is pretty horrible.
+Really, really should have been done with Scheme to get nice s-expr handling... *)
+
+(*
+let print_ast prog = 
+  let indent n = n + 2
+  and dedent n = n - 2 in
+  let rec print_indent n =
+    if n <= 0 then ()
+    else print_string " "; print_indent (n-1) in
+
+  (* do something if list has a single element, something else if it has > 1 *)
+  let cond_print printer word = function
+      [el] -> printer el
+    | l -> Printf.printf "(%s" word; List.map printer l; print_string ")"
+  and gen_printer word next_printer arg =
+    Printf.printf "(%s " word; next_printer arg; print_string ")" in
+
+  let rec print_stmt ind = function 
+      Simple s -> print_simple ind s;
+    | _ -> ()
+  and print_simple ind = function
+      Single s -> print_small_stmt ind s
+    | _ -> ()
+  and print_small_stmt ind = function
+      Expr tot -> print_indent ind; print_string "(expr "; print_tot tot; print_string ")"
+  and print_tot = function
+      Test t -> print_test t
+    | Tuple ts -> print_string "(tuple "; List.map print_test ts; print_string ")"
+  and print_test = function
+      Or_test ot -> print_ort ot
+  and print_ort  = function 
+      Or ands -> cond_print print_andt "or" ands
+  and print_andt = function
+      And nots -> cond_print print_nott "and" nots
+  and print_nott = function
+      NtStexp st_exp -> print_stexp st_exp
+    | Comparison st_exp * comps -> ()
+    | Not nott -> print_string "(not "; print_nott nott; print_string ")"
+	gen_printer "not" print_nott nott
+  and print_stexp = function
+      Star_exp e -> print_expr
+    | Star_sexp e -> gen_printer "star" print_expr e
+  and print_expr = function
+      Bitwise_or xors -> cond_print print_xor "bitwise-or" xors
+  and print_xor = function
+      Bitwise_xor ands -> cond_print print_and "bitwise-xor" ands
+  and print_and = function
+      Program stmts -> print_string "(program \n"; List.map (print_stmt (indent 0)) stmts; print_string ")"
+	*)
+
+(* 
+(try_stmt 
+  (seq "try" ":" suite 
+    (or (seq (rep+ (seq except_clause ":" suite)) (opt (seq "else" ":" suite)) (opt (seq "finally" ":"suite))) 
+(seq "finally" ":" suite))))
+*)

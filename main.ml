@@ -115,6 +115,11 @@ let main () =
     Parser.start lexer lexbuf
  *)
 
+let parse_file f =
+  let lexer = Lexer.gen_lexer () 
+  and lexbuf = Lexing.from_channel (open_in f) in
+    Parser.start lexer lexbuf
+
 let parse () =
   let lexer = Lexer.gen_lexer () in
   let lexbuf = Lexing.from_channel stdin in

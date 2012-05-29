@@ -4,16 +4,16 @@ OCAMLDEP=ocamldep
 INCLUDES=	#
 OCAMLFLAGS=$(INCLUDES)	#
 OCAMLOPTFLAGS=$(INCLUDES)
-PROG1_OBJS=lexer.cmo parser.cmo ast.cmo main.cmo 
+PROG1_OBJS=lexer.cmo ast.cmo parser.cmo main.cmo 
 
-#ast.cmo:
-	#ocamlc -c -pp "camlp4o -I `ocamlfind query type-conv` -I `ocamlfind query sexplib` pa_type_conv.cma pa_sexp_conv.cma" unix.cma bigarray.cma nums.cma -I `ocamlfind query sexplib` sexplib.cma str.cma ast.ml 
+# #ast.cmo:
+# 	#ocamlc -c -pp "camlp4o -I `ocamlfind query type-conv` -I `ocamlfind query sexplib` pa_type_conv.cma pa_sexp_conv.cma" unix.cma bigarray.cma nums.cma -I `ocamlfind query sexplib` sexplib.cma str.cma ast.ml 
 
 main: $(PROG1_OBJS) 
 	$(OCAMLC) -o main $(OCAMLFLAGS) $(PROG1_OBJS) 
 
-run: main
-	ocaml $(PROG1_OBJS)
+inter: $(PROG1_OBJS) 
+	ocaml $(PROG1_OBJS) 
 
 #-I `ocamlfind query sexplib` unix.cma bigarray.cma nums.cma sexplib.cma
 test: main

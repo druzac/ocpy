@@ -42,23 +42,23 @@ start:
 stmts ENDMARKER          { Ast.Program (List.rev $1) }
 |  ENDMARKER           { Ast.Program [] } 
 
-funcdef: DEF NAME parameters COLON suite  { Def ($2, $3, $5)}
+funcdef: DEF NAME parameters COLON suite  { Ast.Def ($2, $3, $5)}
 
-parameters: LPAREN params RPAREN    { $2}
+parameters: LPAREN params RPAREN    { List.rev $2}
 | LPAREN RPAREN                        { []}
 
 params: paramlist COMMA             {$1}
 | paramlist                         {$1}
 
 paramlist: paramlist COMMA NAME     {$3::$1}
-| NAME                              {[$1]}   
+| NAME                              {[$1]}
 
 /* -> stmt list */
 stmts: stmts stmt  { $2 :: $1 }
 | stmt {[$1]}
 
 /* -> stmt */
-stmt: simple_stmts_wrapper { $1}
+stmt: simple_stmts_wrapper { Ast.Simple $1}
 | compound_stmt           {$1}
 
 /* simple_stmt */
@@ -66,8 +66,8 @@ simple_stmts_wrapper: simple_stmts SEMICOLON NEWLINE { $1 }
 | simple_stmts NEWLINE                               {$1}
 
 /* small_stmt -> simple_stmt (begin or single)*/
-simple_stmts: simple_stmts SEMICOLON small_stmt { Single $1 }
-| small_stmt {$1}
+simple_stmts: simple_stmts SEMICOLON small_stmt { Ast.Single $3 }
+| small_stmt {Ast.Single $1}
 
 /* -> small_stmt */
 small_stmt: expr_stmt { $1 }
@@ -78,22 +78,22 @@ small_stmt: expr_stmt { $1 }
 | nonlocal_stmt{$1}
 | assert_stmt{$1}
 
-expr_stmt: testlist assign_op tuple_or_test {Assignment ($2, $1, $3)}
-| tuple_or_test                        {Expr $1}
+expr_stmt: testlist assign_op testlist {Ast.Assignment ($2, $1, (Ast.testlist_to_tot $3))}
+| testlist                        {Ast.Expr (Ast.testlist_to_tot $1)}
 
-assign_op: PLUSEQ       { Pluseq}
-| MINUSEQ      {Minuseq}
-| STAREQ      {Stareq}
-| SLASHEQ      {Slasheq}
-| PERCENTEQ      {Percenteq}
-| AMPEQ      {Ampeq}
-| PIPEEQ      {Pipeeq}
-| CARETEQ      {Careteq}
-| DLTEQ      {Dlteq}
-| DGTEQ      {Dgteq}
-| DSTAREQ      {Dstareq}
-| DSLASHEQ      {Dslasheq}
-| EQ            {Eq}
+assign_op: PLUSEQ       { Ast.Pluseq}
+| MINUSEQ      {Ast.Minuseq}
+| STAREQ      {Ast.Stareq}
+| SLASHEQ      {Ast.Slasheq}
+| PERCENTEQ      {Ast.Percenteq}
+| AMPEQ      {Ast.Ampeq}
+| PIPEEQ      {Ast.Pipeeq}
+| CARETEQ      {Ast.Careteq}
+| DLTEQ      {Ast.Dlteq}
+| DGTEQ      {Ast.Dgteq}
+| DSTAREQ      {Ast.Dstareq}
+| DSLASHEQ      {Ast.Dslasheq}
+| EQ            {Ast.Eq}
 
 del_stmt: DEL star_expr  {Ast.Del $2}
 
@@ -121,6 +121,9 @@ global_stmt: GLOBAL name_list {Ast.Global (List.rev $2)}
 
 nonlocal_stmt: NONLOCAL name_list {Ast.Nonlocal (List.rev $2)}
 
+name_list: name_list COMMA STRING { $3 :: $1}
+| STRING                          {[$1]}
+
 assert_stmt: ASSERT testlist   {Ast.Assert $2}
 
 /* -> stmt */
@@ -130,47 +133,58 @@ compound_stmt: if_stmt  {$1}
 | try_stmt {$1}
 | funcdef {$1}
 
-if_stmt: ifs_elifs ELSE COLON suite  {Ast.Cond ([], Some $4)}
-| ifs_elifs {Ast.Cond ([], None)}
+/* This is all dummy stuff, needs to be finished */
+if_stmt: ifs_elifs ELSE COLON suite  {Ast.Cond (List.rev $1, Some $4)}
+| ifs_elifs {Ast.Cond (List.rev $1, None)}
 
-ifs_elifs: ifs_elifs ELIF test COLON suite  {Ast.Cond ([], None)}
-| IF test COLON suite                       {Ast.Cond ([], None)}
+ifs_elifs: ifs_elifs ELIF test COLON suite  {($3,$5) :: $1}
+| IF test COLON suite                       { [($2,$4)] }
 
-while_stmt: while_core ELSE COLON suite     {Ast.Cond ([], None)}
-| while_core{Ast.Cond ([], None)}
+while_stmt: while_core ELSE COLON suite     {Ast.while_fin $1 (Some $4)}
+| while_core                                {Ast.while_fin $1 None}
 
-while_core: WHILE test COLON suite{Ast.Cond ([], None)}
+while_core: WHILE test COLON suite          { $2,$4}
 
-for_stmt: for_core ELSE COLON suite{Ast.Cond ([], None)}
-| for_core{Ast.Cond ([], None)}
+for_stmt: for_core ELSE COLON suite         {Ast.for_fin $1 (Some $4)}
+| for_core                                  {Ast.for_fin $1 None}
 
-for_core: FOR NAME IN test COLON suite{Ast.Cond ([], None)}
+for_core: FOR NAME IN test COLON suite      { ($2,$4,$6)}
 
-try_stmt: try_core exc_el_finally{Try $1
-| try_core finally{Ast.Cond ([], None)}
 
-try_core: TRY COLON suite{Ast.Cond ([], None)}
+/* for now, just return the suite part */
+try_stmt: try_core exc_el_finally           {Ast.try_fin $1 $2}
+| try_core finally                          {Ast.try_fin $1 ([],None,Some $2)}
 
-exc_el_finally: except_clauses el_finally{Ast.Cond ([], None)}
+finally: FINALLY COLON suite                {$3}
 
-except_clauses: except_clauses except_clause_w_suite{Ast.Cond ([], None)}
-| except_clause_w_suite{Ast.Cond ([], None)}
+/* returns the suite part of the try block */
+try_core: TRY COLON suite                   {$3}
 
-except_clause_w_suite: except_clause COLON suite{Ast.Cond ([], None)}
+/* except clauses returns the (catch * suite) list part,
+  el_finally returns the (suite option) * (suite option) */
+exc_el_finally: except_clauses el_finally   {Ast.excepts_elfin $1 $2}
 
-except_clause: EXCEPT {Ast.Cond ([], None)}
-| EXCEPT test{Ast.Cond ([], None)}
-| EXCEPT test AS NAME{Ast.Cond ([], None)}
 
-el_finally: else_in_try fin_in_try{Ast.Cond ([], None)}
-| fin_in_try{Ast.Cond ([], None)}
-| else_in_try{Ast.Cond ([], None)}
+except_clauses: except_clauses except_clause_w_suite  {$2::$1}
+| except_clause_w_suite                     {[$1]}
 
-else_in_try: ELSE COLON suite{Ast.Cond ([], None)}
+except_clause_w_suite: 
+except_clause COLON suite                   {$1, $3}
 
-fin_in_try: FINALLY COLON suite{Ast.Cond ([], None)}
+/* -> catch */
+except_clause: EXCEPT                        {Ast.Except None}
+| EXCEPT test                                {Ast.Except (Some ($2, None))}
+| EXCEPT test AS NAME                        {Ast.Except (Some ($2, Some $4))}
 
-suite: simple_stmt  {Ast.Suite_single $1}
+el_finally: else_in_try fin_in_try           {Some $1, Some $2}
+| fin_in_try                                 {None, Some $1}
+| else_in_try                                {Some $1, None}
+
+else_in_try: ELSE COLON suite                {$3}
+
+fin_in_try: FINALLY COLON suite              {$3}
+
+suite: simple_stmts_wrapper  {Ast.Suite_single $1}
 | NEWLINE INDENT stmts DEDENT {Ast.Suite (List.rev $3)}
 
 /* the second rule is supposed to be a tuple_or_test, but those look
@@ -180,7 +194,7 @@ test: or_test IF or_test ELSE test {Ast.If_test (Ast.lor_fin $1, Ast.lor_fin $3,
 | or_test                          {Ast.Or_test (Ast.lor_fin $1)}
 | lambdef                          {$1}
 
-lambdef: LAMBDA paramlist COLON test {Ast.Lambda ((List.rev $2) $4)}
+lambdef: LAMBDA paramlist COLON test {Ast.Lambda ((List.rev $2), $4)}
 | LAMBDA COLON test                  {Ast.Lambda ([], $3)}
 
 or_test: or_test OR and_test {Ast.lor_add $3 $1}
@@ -246,7 +260,7 @@ term_op: STAR  {Ast.Star}
 | DSLASH        {Ast.Dfslash}  
 
 factor: factor_op factor { Ast.Uapp ($1, $2) }
-| power                  { Ast.Power $1}
+| power                  { Ast.Fact_single $1}
 
 factor_op: PLUS { Ast.Uplus }
 | MINUS  { Ast.Uminus }
@@ -257,12 +271,12 @@ indexed trailer             {Ast.indexed_add $2 $1}
 | atom                      {Ast.Atom $1}
 
 power: indexed  {Ast.Pow_single (Ast.indexed_fin $1) }
-| indexed DSTAR factor { Ast.Indexed (Ast.indexed_fin $1, $3)}
+| indexed DSTAR factor { Ast.Power (Ast.indexed_fin $1, $3)}
 
 /* -> atom */
 atom: 
 LPAREN RPAREN                   {Ast.Empty_tuple}
-| LPAREN tuple_or_test RPAREN   {Ast.Tot $1}
+| LPAREN testlist RPAREN   {Ast.Tot (Ast.testlist_to_tot $2)}
 | LBRACKET RBRACKET             {Ast.List []}
 | LBRACKET testlist RBRACKET    {Ast.List $2}
 | LBRACE RBRACE                 {Ast.Dict []}
@@ -277,8 +291,8 @@ LPAREN RPAREN                   {Ast.Empty_tuple}
 
 trailer: LPAREN RPAREN      { Ast.Called []}
 | LPAREN testlist RPAREN     {Ast.Called $2}
-| LBRACKET RBRACKET         {Ast.Subscript (Tuple [])}
-| LBRACKET tuple_or_test RBRACKET   {Ast.Subscript $2} 
+| LBRACKET RBRACKET         {Ast.Subscript (Ast.Tuple [])}
+| LBRACKET testlist RBRACKET   {Ast.Subscript (Ast.testlist_to_tot $2)} 
 | DOT NAME                          {Ast.Dot $2}
 
 testlist: tests COMMA { $1 }
@@ -287,8 +301,12 @@ testlist: tests COMMA { $1 }
 tests: tests COMMA test { $3 :: $1 }
 | test                      { [$1] }
 
-tuple_or_test: tuple_or_test_core COMMA { $1 }
+/*tuple_or_test: tuple_or_test_core COMMA { $1 }
 | tuple_or_test_core                    { $1}
+
+tuple_or_test_core: tuple_or_test_core COMMA test  { Ast.tot_add $3 $1}
+| test                   { Ast.Test $1}
+*/
 
 dictorsetmaker: dict      { Ast.Dict $1}
 | set                     {Ast.Set $1}
@@ -301,8 +319,6 @@ dict_core: dict_core COMMA test COLON test   {Ast.dict_add $3 $5 $1}
 
 set: testlist                    {$1}
 
-tuple_or_test_core: tuple_or_test_core COMMA test  { Ast.add_tot $3 $1}
-| test                   { Ast.Test $1}
 
   /* very inefficient for long string sequences */
 strings: strings STRING { $1 ^ $2 }
