@@ -188,8 +188,32 @@ let excepts_elfin catch_sts el_fin =
 let try_fin suite = function
   (a,b,c) -> Try (suite,a,b,c)
 
-(* forget the printer... this is pretty horrible.
-Really, really should have been done with Scheme to get nice s-expr handling... *)
+(* printer helpers *)
+
+let obox0() = Format.open_hvbox 0
+let obox() = Format.open_hvbox 2
+let cbox() = Format.close_box ()
+let break () = Format.print_break 0 0
+
+let pr_one word printer atom =
+  obox (); Format.print_string "("; Format.print_string word; Format.print_space (); printer atom;
+  Format.print_string ")"; cbox ()
+
+let pr_slist printer el =
+  obox(); Format.print_string "("; List.map printer el; Format.print_string ")"; cbox()
+
+let pr_strwsp str =
+  Format.print_string str; Format.print_space ()
+
+let rec print_ast = function
+    Program stmts -> pr_one "program" (List.map print_stmt) stmts
+
+and print_stmt = function
+    Def (f, args, body) -> pr_one "def" (fun (a,b) -> pr_slist pr_strwsp a; print_suite b) (args,body)
+  | _ -> ()
+
+and print_suite = function
+    _ -> ()
 
 (*
 let print_ast prog = 

@@ -125,5 +125,9 @@ let parse () =
   let lexbuf = Lexing.from_channel stdin in
     Parser.start lexer lexbuf
 
+let ast = parse ();;
+
+Ast.print_ast ast;;
+
 (*let _ = Ast.print_sexp (Ast.get_sexp ast_tree)*)
 (*let _ = print_string "\n"*)

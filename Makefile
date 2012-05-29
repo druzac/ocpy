@@ -12,6 +12,9 @@ PROG1_OBJS=lexer.cmo ast.cmo parser.cmo main.cmo
 main: $(PROG1_OBJS) 
 	$(OCAMLC) -o main $(OCAMLFLAGS) $(PROG1_OBJS) 
 
+run: main
+	./main
+
 inter: $(PROG1_OBJS) 
 	ocaml $(PROG1_OBJS) 
 
