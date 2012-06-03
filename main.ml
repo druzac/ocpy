@@ -1,6 +1,23 @@
 open Printf
 open Parser
 
+let parse_file f =
+  let lexer = Lexer.gen_lexer () 
+  and lexbuf = Lexing.from_channel (open_in f) in
+    Parser.start lexer lexbuf
+
+let parse () =
+  let lexer = Lexer.gen_lexer () in
+  let lexbuf = Lexing.from_channel stdin in
+    Parser.start lexer lexbuf
+
+let ast = parse ();;
+
+(*Ast.print_ast ast;;*)
+
+(*let _ = Ast.print_sexp (Ast.get_sexp ast_tree)*)
+(*let _ = print_string "\n"*)
+(*
 let printer = function
   | INDENT -> print_string "(INDENT)\n"
   | DEDENT -> print_string "(DEDENT)\n"
@@ -87,6 +104,7 @@ let printer = function
   | DSTAREQ -> printf "(DSTAREQ)\n"
   | ELLIPSIS -> printf "(ELLIPSIS)\n"
   | _ -> print_string "I don't know...\n"
+      *)
 
 (*let lexer = Lexer.gen_lexer ();;*)
 
@@ -114,20 +132,3 @@ let main () =
   let lexbuf = Lexing.from_channel stdin in
     Parser.start lexer lexbuf
  *)
-
-let parse_file f =
-  let lexer = Lexer.gen_lexer () 
-  and lexbuf = Lexing.from_channel (open_in f) in
-    Parser.start lexer lexbuf
-
-let parse () =
-  let lexer = Lexer.gen_lexer () in
-  let lexbuf = Lexing.from_channel stdin in
-    Parser.start lexer lexbuf
-
-let ast = parse ();;
-
-Ast.print_ast ast;;
-
-(*let _ = Ast.print_sexp (Ast.get_sexp ast_tree)*)
-(*let _ = print_string "\n"*)

@@ -62,11 +62,12 @@ stmt: simple_stmts_wrapper { Ast.Simple $1}
 | compound_stmt           {$1}
 
 /* simple_stmt */
-simple_stmts_wrapper: simple_stmts SEMICOLON NEWLINE { $1 }
-| simple_stmts NEWLINE                               {$1}
+simple_stmts_wrapper: simple_stmts SEMICOLON NEWLINE { Ast.smpl_stmt_fin $1 }
+| simple_stmts NEWLINE                               {Ast.smpl_stmt_fin $1}
 
 /* small_stmt -> simple_stmt (begin or single)*/
-simple_stmts: simple_stmts SEMICOLON small_stmt { Ast.Single $3 }
+/* doesn't use the first bit! we drop everything but the last statement */
+simple_stmts: simple_stmts SEMICOLON small_stmt { Ast.smpl_stmt_add $3 $1}
 | small_stmt {Ast.Single $1}
 
 /* -> small_stmt */
@@ -78,7 +79,7 @@ small_stmt: expr_stmt { $1 }
 | nonlocal_stmt{$1}
 | assert_stmt{$1}
 
-expr_stmt: testlist assign_op testlist {Ast.Assignment ($2, $1, (Ast.testlist_to_tot $3))}
+expr_stmt: testlist assign_op testlist {Ast.Assignment ($2, List.rev $1, (Ast.testlist_to_tot $3))}
 | testlist                        {Ast.Expr (Ast.testlist_to_tot $1)}
 
 assign_op: PLUSEQ       { Ast.Pluseq}
@@ -111,7 +112,7 @@ break_stmt: BREAK  {Ast.Break}
 continue_stmt: CONTINUE {Ast.Continue}
 
 return_stmt: RETURN     { Ast.Return []}
-| RETURN testlist       {Ast.Return $2}
+| RETURN testlist       {Ast.Return (List.rev $2)}
 
 raise_stmt: RAISE       { Ast.Raise (None, None)}
 | RAISE test            { Ast.Raise (Some $2, None)}
@@ -121,10 +122,10 @@ global_stmt: GLOBAL name_list {Ast.Global (List.rev $2)}
 
 nonlocal_stmt: NONLOCAL name_list {Ast.Nonlocal (List.rev $2)}
 
-name_list: name_list COMMA STRING { $3 :: $1}
-| STRING                          {[$1]}
+name_list: name_list COMMA NAME { $3 :: $1}
+| NAME                          {[$1]}
 
-assert_stmt: ASSERT testlist   {Ast.Assert $2}
+assert_stmt: ASSERT testlist   {Ast.Assert (List.rev $2)}
 
 /* -> stmt */
 compound_stmt: if_stmt  {$1}
@@ -163,6 +164,7 @@ try_core: TRY COLON suite                   {$3}
 /* except clauses returns the (catch * suite) list part,
   el_finally returns the (suite option) * (suite option) */
 exc_el_finally: except_clauses el_finally   {Ast.excepts_elfin $1 $2}
+| except_clauses                            {Ast.excepts_elfin $1 (None, None)}
 
 
 except_clauses: except_clauses except_clause_w_suite  {$2::$1}
@@ -184,6 +186,8 @@ else_in_try: ELSE COLON suite                {$3}
 
 fin_in_try: FINALLY COLON suite              {$3}
 
+/* since a suite must be followed by a... wait, must it?
+* I don't remember. Maybe it's fine */
 suite: simple_stmts_wrapper  {Ast.Suite_single $1}
 | NEWLINE INDENT stmts DEDENT {Ast.Suite (List.rev $3)}
 
@@ -278,7 +282,7 @@ atom:
 LPAREN RPAREN                   {Ast.Empty_tuple}
 | LPAREN testlist RPAREN   {Ast.Tot (Ast.testlist_to_tot $2)}
 | LBRACKET RBRACKET             {Ast.List []}
-| LBRACKET testlist RBRACKET    {Ast.List $2}
+| LBRACKET testlist RBRACKET    {Ast.List (List.rev $2)}
 | LBRACE RBRACE                 {Ast.Dict []}
 | LBRACE dictorsetmaker RBRACE  {$2}
 | NAME          {Ast.Name $1}
@@ -290,7 +294,7 @@ LPAREN RPAREN                   {Ast.Empty_tuple}
 | FALSE         { Ast.False}
 
 trailer: LPAREN RPAREN      { Ast.Called []}
-| LPAREN testlist RPAREN     {Ast.Called $2}
+| LPAREN testlist RPAREN     {Ast.Called (List.rev $2)}
 | LBRACKET RBRACKET         {Ast.Subscript (Ast.Tuple [])}
 | LBRACKET testlist RBRACKET   {Ast.Subscript (Ast.testlist_to_tot $2)} 
 | DOT NAME                          {Ast.Dot $2}
@@ -308,8 +312,8 @@ tuple_or_test_core: tuple_or_test_core COMMA test  { Ast.tot_add $3 $1}
 | test                   { Ast.Test $1}
 */
 
-dictorsetmaker: dict      { Ast.Dict $1}
-| set                     {Ast.Set $1}
+dictorsetmaker: dict      { Ast.Dict (List.rev $1)}
+| set                     {Ast.Set (List.rev $1)}
 
 dict: dict_core COMMA     {$1}
 | dict_core               {$1}
