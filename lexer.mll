@@ -161,21 +161,22 @@ let escape_seq = "\\" | "'" | "\"" | "a" | "b" | "f" | "n" | "r" | "t" | "v"
  * also cover the empty line case here so after we see an endline, we are
  * guaranteed a non-empty line *)
 rule line_start = parse
-| white_space* (comment?) '\n'        { line_start lexbuf}
-| form_feed         { line_start lexbuf}
-| indent_space as s  { INDENT_SPACE (String.length s) }
-| eof               { ENDMARKER }
+| white_space* (comment?) '\n'  { line_start lexbuf}
+| form_feed			{ line_start lexbuf}
+| indent_space as s		{ INDENT_SPACE (String.length s) }
+| eof				{ ENDMARKER }
 
 (* we're in the middle of a line here *)
 and line_middle = parse
-| white_space*       { line_middle lexbuf }
-| "\\\n"             { line_middle lexbuf}
-| '\n'              { NEWLINE }
-| num_lit as num    { NUMBER (int_of_string num) }
-| identifier as id   { begin try (lookup_keyword id) with Not_found -> NAME id end} 
-| punct as p        { lookup_punct p}
-| lit_str as s       { STRING s }
-| _                 { raise (Lex_Error ("Unexpected character"))}
+| white_space*			{ line_middle lexbuf }
+| "\\\n"			{ line_middle lexbuf}
+| '\n'				{ NEWLINE }
+| num_lit as num		{ NUMBER (int_of_string num) }
+| identifier as id		{ begin try (lookup_keyword id) with Not_found -> NAME id end}
+| punct as p			{ lookup_punct p}
+| lit_str as s			{ STRING s }
+| eof				{ ENDMARKER}
+| _				{ raise (Lex_Error ("Unexpected character"))}
 
 
 (* footer *)
