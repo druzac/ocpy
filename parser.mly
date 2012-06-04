@@ -198,7 +198,7 @@ test: or_test IF or_test ELSE test {Ast.If_test (Ast.lor_fin $1, Ast.lor_fin $3,
 | or_test                          {Ast.Or_test (Ast.lor_fin $1)}
 | lambdef                          {$1}
 
-lambdef: LAMBDA paramlist COLON test {Ast.Lambda ((List.rev $2), $4)}
+lambdef: LAMBDA params COLON test {Ast.Lambda ((List.rev $2), $4)}
 | LAMBDA COLON test                  {Ast.Lambda ([], $3)}
 
 or_test: or_test OR and_test {Ast.lor_add $3 $1}

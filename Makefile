@@ -51,6 +51,7 @@ lexer.cmo: lexer.ml parser.cmi
 # Clean up 
 clean:
 	rm -f *.cm[iox]
+	rm -f lexer.ml parser.ml parser.mli
 # Dependencies 
 .depend:
 	$(OCAMLDEP) $(INCLUDES) *.mli *.ml > .depend 
