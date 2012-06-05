@@ -1,0 +1,51 @@
+**** What is this thing
+
+A 'compiler' for python written in ocaml.
+Built by following the project given at 
+http://matt.might.net/teaching/compilers/spring-2011/
+as a rough guide.
+
+Currently it's just a front end (parser + lexer) for a streamlined subset of
+python. See:
+http://matt.might.net/apps/pyparse/python-subset.txt
+for a specification of the accepted grammar (given in S expressions, 
+unfortunately!)
+
+Developed with Ocaml 3.12.1
+
+**** Make stuff happen
+
+Easiest way to make it go is to run:
+$make inter
+
+This will build the bytecode bits and run an ocaml toplevel with some 
+modules loaded.
+Then the following call:
+Main.parse ();;
+
+will read from stdin and build a parse tree. It will be written by the ocaml
+toplevel interpreter.
+I didn't write my own printer because the implementation of the parse tree 
+uses many many variant types and I was feeling much too lazy. Probably some 
+fancy module or type indexed value based implementation would have been
+much better, but I don't know Ocaml very well.
+
+There is probably some method of getting ocaml to print the 
+
+**** 'Features'
+
+Lexer:
+Strings - includes the apostrophe character, doesn't barf on newlines in 
+small strings (it should)
+Numbers - just ints. No imaginary / exponential nonsense here!
+
+Parser:
+Misbehaves on input that doesn't terminate with a newline character.
+Try an input like '1', it will give you a parse error. Every statement needs
+to be ended with a newline character, and the lexer doesn't tack on a newline
+character to the end of the input.
+
+**** Apologies
+
+There is commented out and junk code lying around all over the place. The
+sources are quite messy...

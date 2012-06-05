@@ -10,7 +10,7 @@ let parse () =
   let lexbuf = Lexing.from_channel stdin in
     Parser.start lexer lexbuf
 
-let parse_string s =
+let parse_str s =
   Parser.start (get_lexer ()) (Lexing.from_string s)
 
 let lex lexbuf =
@@ -26,6 +26,9 @@ let lex lexbuf =
   
 let lex_str s =
   lex (Lexing.from_string s)
+
+let lex_in () =
+  lex (Lexing.from_channel stdin)
 
 (*let lex_file f =
   let lexer = Lexer.gen_lexer () in
