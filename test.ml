@@ -1,8 +1,8 @@
 open Ast
 
-let bpath f_name = "./parse_tests/" ^ f_name;;
+let bpath f_name = "./tests/" ^ f_name;;
 
-let path = "./parse_tests/";; 
+let path = "./tests/";; 
 
 let ass left right =
   assert (left = right)
