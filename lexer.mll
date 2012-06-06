@@ -1,9 +1,6 @@
-(* not dealing with tabs for the time being *)
-
-(* by the way, use OCAML compatible strings instead of racket compatible
- * strings, no sense being shackled to this racket love on*)
-
-(* things we don't handle currently:
+(* not dealing with tabs for the time being
+ * Use ocaml strings
+ things we don't handle currently:
     * tabs
     * strings (newlines, short strings vs long strings
     * any kind of numbers besides integers
@@ -112,8 +109,6 @@ let dq_lstring = '"' '"' '"' ( '"' '"'? [^'"'] | [^'"'] | '\\' '"')* '"' '"' '"'
 let lit_str = sq_sstring | sq_lstring | dq_sstring | dq_lstring
 (* end stowaways*)
 
-
-
 let indent_space = ' '*
 let white_space = [' ' '\009' '\012']
 let comment = '#' [^'\n']*
@@ -143,8 +138,7 @@ let exp = ('e' | 'E') ('+'|'-')? digits
 let exp_float = (digits | point_float) exp
 let float_lit = point_float | exp_float
 
-(* maaaaybe we want to change this around a little...
- * the racket way is +1.0i *)
+(* the racket way is +1.0i *)
 let imag_lit = (float_lit | digits) ('j'|'J')
 let num_lit = int_lit | float_lit | imag_lit
 
