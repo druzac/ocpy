@@ -6,12 +6,17 @@ exception Ast_Abused
 
 type ident = string
 type number = int
-type bop = Bplus | Bminus
-type uop = Uplus | Uminus
+type bop = Bplus | Bminus | Bstar | Bslash | Bpercent | Bdslash
+	   | Bdstar | Bpipe | Bcaret | Bamp | Bdlt | Bdgt
+	   | Blt | Bgt | Bdeq | Bgteq | Blteq | Bnoteq
+	   | Bin | Bnotin | Bis | Bisnot
+	   | Band | Bor
+type uop = Uplus | Uminus | Utilde | Unot
 
 type expr =
   | If of expr * expr * expr
   | Lambda of (ident list) * expr
+  | Star of expr
   | Bapp of bop * expr * expr
   | Uapp of uop * expr
   | App of expr * (expr list)
@@ -31,14 +36,17 @@ type expr =
 
 (* statements types *)
 type catch = (expr * (ident option)) option
-type aop = Aeq
-
+type aop = Aeq |
+Apluseq | Aminuseq| Astareq| Aslasheq| Apercenteq| Aampeq
+| Apipeeq | Acareteq | Adlteq | Adgteq | Adstareq | Adslasheq
+ 
 type stmt = 
 (* Simple expressions *)
   | Assign of aop * (expr list) * (expr list)
 (* I don't really like this... sleep on it *)
   | Expr of expr
   | Del of expr
+  | Begin of suite
   | Pass
   | Break
   | Continue
@@ -55,3 +63,15 @@ type stmt =
   | Def of ident * (ident list) * suite                  (* Funcdef *)
 
 and suite = stmt list
+
+type program = Prog of suite
+
+(* a singleton list -> its item
+anything else -> wrapped by tuple *)
+let exprs2expr elistcom = match elistcom with
+  |(l, true) -> Tuple l
+  | ([e], false) -> e
+  | (l, false) -> (Tuple l)
+
+let exprs2exprl elistcom = match elistcom with
+    (l, _) -> l
