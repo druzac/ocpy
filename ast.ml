@@ -51,7 +51,7 @@ type stmt =
   | Break
   | Continue
   | Return of expr
-  | Raise of expr option * expr option
+  | Raise of (expr * expr option) option
   | Global of string list
   | Nonlocal of string list
   | Assert of expr list
@@ -75,3 +75,11 @@ let exprs2expr elistcom = match elistcom with
 
 let exprs2exprl elistcom = match elistcom with
     (l, _) -> l
+
+let revbegin stmt = match stmt with
+    Begin stmts -> Begin (List.rev stmts)
+  | _ -> stmt
+
+let for_make triple epi =
+  let (nm, tst, suite) = triple in
+    For (nm, tst, suite, epi)

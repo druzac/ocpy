@@ -52,12 +52,11 @@ exception Parse_error of string
 %%  
 
 start:  
-stmts ENDMARKER					{ Ast.Prog (List.rev $1) }
+stmtlist ENDMARKER				{ Ast.Prog (List.rev $1) }
 |  ENDMARKER					{ Ast.Prog [] } 
 
-/*
 funcdef: DEF NAME parameters COLON suite	{ Ast.Def ($2, $3, $5)}
-*/
+
 parameters: LPAREN params RPAREN		{$2}
 | LPAREN RPAREN					{[]}
 
@@ -68,20 +67,18 @@ paramlist: paramlist COMMA NAME			{$3::$1}
 | NAME						{[$1]}
 
 /* -> stmt list */
+stmtlist: stmts                                 {List.rev $1}
+
 stmts: stmts stmt				{ $2 :: $1 }
 | stmt						{[$1]}
 
 /* -> stmt */
-stmt: simple_stmts_wrapper			{match $1 with 
-                                                        Ast.Begin l -> Ast.Begin (List.rev l)
-                                                                | _ -> $1}
-/*
+stmt: simple_stmts_wrapper			{$1}
 | compound_stmt					{$1}
-*/
 
-/* simple_stmt */
-simple_stmts_wrapper: simple_stmts SEMICOLON NEWLINE {$1}
-| simple_stmts NEWLINE                               {$1}
+/* -> stmt */
+simple_stmts_wrapper: simple_stmts SEMICOLON NEWLINE {Ast.revbegin $1}
+| simple_stmts NEWLINE                               {Ast.revbegin $1}
 
 /* small_stmt -> simple_stmt (begin or single)*/
 simple_stmts: simple_stmts SEMICOLON small_stmt {match $1 with Ast.Begin l -> Ast.Begin ($3::l)
@@ -94,60 +91,61 @@ testlist						{Ast.Expr (Ast.exprs2expr $1)}
 | testlist assign_op testlist				{ Ast.Assign ($2, 
 							              Ast.exprs2exprl $1,
 								      Ast.exprs2exprl $3)}
-  /*
+/* need another rule, something like:
+test assign_op testlist - corresponds to assigning a tuple */
 | del_stmt						{$1}
 | pass_stmt						{$1}
-| flow_stmt						{$1}
-| global_stmt						{$1}
-| nonlocal_stmt						{$1}
-| assert_stmt						{$1}
-*/
-
-assign_op: 
-/*PLUSEQ						{ Ast.Pluseq}
-| MINUSEQ						{Ast.Minuseq}
-| STAREQ						{Ast.Stareq}
-| SLASHEQ						{Ast.Slasheq}
-| PERCENTEQ						{Ast.Percenteq}
-| AMPEQ							{Ast.Ampeq}
-| PIPEEQ						{Ast.Pipeeq}
-| CARETEQ						{Ast.Careteq}
-| DLTEQ							{Ast.Dlteq}
-| DGTEQ							{Ast.Dgteq}
-| DSTAREQ						{Ast.Dstareq}
-| DSLASHEQ						{Ast.Dslasheq}
-*/
-| EQ							{Ast.Aeq}
-/*
-del_stmt: DEL star_expr					{Ast.Del $2}
-
-pass_stmt: PASS						{Ast.Pass}
-
-flow_stmt:
-break_stmt						{$1}
+| break_stmt						{$1}
 | continue_stmt						{$1}
 | return_stmt						{$1}
 | raise_stmt						{$1}
+| global_stmt						{$1}
+| nonlocal_stmt						{$1}
+| assert_stmt						{$1}
+
+assign_op: 
+PLUSEQ  						{ Ast.Apluseq}
+| MINUSEQ						{Ast.Aminuseq}
+| STAREQ						{Ast.Astareq}
+| SLASHEQ						{Ast.Aslasheq}
+| PERCENTEQ						{Ast.Apercenteq}
+| AMPEQ							{Ast.Aampeq}
+| PIPEEQ						{Ast.Apipeeq}
+| CARETEQ						{Ast.Acareteq}
+| DLTEQ							{Ast.Adlteq}
+| DGTEQ							{Ast.Adgteq}
+| DSTAREQ						{Ast.Adstareq}
+| DSLASHEQ						{Ast.Adslasheq}
+| EQ							{Ast.Aeq}
+
+del_stmt: DEL star_expr					{Ast.Del $2}
+
+pass_stmt: PASS						{Ast.Pass}
 
 break_stmt: BREAK					{Ast.Break}
 
 continue_stmt: CONTINUE					{Ast.Continue}
 
-return_stmt: RETURN					{ Ast.Return []}
-| RETURN testlist					{Ast.Return (List.rev $2)}
+/* here we tuple if we see a comma */
+return_stmt: RETURN					{ Ast.Return (Ast.None)}
+| RETURN testlist					{Ast.Return (Ast.exprs2expr $2)}
 
-raise_stmt: RAISE					{ Ast.Raise (None, None)}
-| RAISE test						{ Ast.Raise (Some $2, None)}
-| RAISE test FROM test					{ Ast.Raise (Some $2, Some $4)}
+raise_stmt: RAISE					{ Ast.Raise (None)}
+| RAISE test						{ Ast.Raise (Some ($2, None))}
+| RAISE test FROM test					{ Ast.Raise (Some ($2, Some $4))}
 
-global_stmt: GLOBAL name_list				{Ast.Global (List.rev $2)}
+global_stmt: GLOBAL name_list				{Ast.Global $2}
 
-nonlocal_stmt: NONLOCAL name_list			{Ast.Nonlocal (List.rev $2)}
+nonlocal_stmt: NONLOCAL name_list			{Ast.Nonlocal $2}
 
-name_list: name_list COMMA NAME				{ $3 :: $1}
+/* the name_list can't have a trailing comma */
+name_list: names					{List.rev $1}
+
+names: names COMMA NAME 				{ $3 :: $1}
 | NAME							{[$1]}
 
-assert_stmt: ASSERT testlist				{Ast.Assert (List.rev $2)}
+/* assert statement cannot have a trailling comma*/
+assert_stmt: ASSERT tests				{Ast.Assert (List.rev $2)}
 
 compound_stmt: if_stmt					{$1}
 | while_stmt						{$1}
@@ -161,25 +159,28 @@ if_stmt: ifs_elifs ELSE COLON suite			{Ast.Cond (List.rev $1, Some $4)}
 ifs_elifs: ifs_elifs ELIF test COLON suite		{($3,$5) :: $1}
 | IF test COLON suite					{ [($2,$4)] }
 
-while_stmt: while_core ELSE COLON suite			{Ast.while_fin $1 (Some $4)}
-| while_core						{Ast.while_fin $1 None}
+while_stmt: while_core ELSE COLON suite			{Ast.While (fst $1, snd $1, (Some $4))}
+| while_core						{Ast.While (fst $1, snd $1, None)}
 
-while_core: WHILE test COLON suite			{ $2,$4}
+while_core: WHILE test COLON suite			{$2,$4}
 
-for_stmt: for_core ELSE COLON suite			{Ast.for_fin $1 (Some $4)}
-| for_core						{Ast.for_fin $1 None}
+for_stmt: for_core ELSE COLON suite			{Ast.for_make $1 (Some $4)}
+| for_core						{Ast.for_make $1 None}
 
-for_core: FOR NAME IN test COLON suite			{ ($2,$4,$6)}
+for_core: FOR NAME IN test COLON suite			{($2,$4,$6)}
 
-try_stmt: try_core exc_el_finally			{Ast.try_fin $1 $2}
-| try_core finally					{Ast.try_fin $1 ([],None,Some $2)}
+try_stmt: try_core exc_el_finally
+          {let (exs, el, fin) = $2 in
+           Ast.Try ($1, exs, el, fin)}
+| try_core finally					{Ast.Try ($1, [], None, Some $2)}
+
 
 finally: FINALLY COLON suite				{$3}
 
 try_core: TRY COLON suite				{$3}
 
-exc_el_finally: except_clauses el_finally		{Ast.excepts_elfin $1 $2}
-| except_clauses					{Ast.excepts_elfin $1 (None, None)}
+exc_el_finally: except_clauses el_finally		{$1, fst $2, snd $2}
+| except_clauses					{$1, None, None}
 
 except_clauses: except_clauses except_clause_w_suite	{$2::$1}
 | except_clause_w_suite					{[$1]}
@@ -187,9 +188,10 @@ except_clauses: except_clauses except_clause_w_suite	{$2::$1}
 except_clause_w_suite: 
 except_clause COLON suite				{$1, $3}
 
-except_clause: EXCEPT					{Ast.Except None}
-| EXCEPT test						{Ast.Except (Some ($2, None))}
-| EXCEPT test AS NAME					{Ast.Except (Some ($2, Some $4))}
+/* -> catch */
+except_clause: EXCEPT					{None}
+| EXCEPT test						{Some ($2, None)}
+| EXCEPT test AS NAME					{Some ($2, Some $4)}
 
 el_finally: else_in_try fin_in_try			{Some $1, Some $2}
 | fin_in_try						{None, Some $1}
@@ -199,9 +201,9 @@ else_in_try: ELSE COLON suite				{$3}
 
 fin_in_try: FINALLY COLON suite				{$3}
 
-suite: simple_stmts_wrapper				{Ast.Suite_single $1}
-| NEWLINE INDENT stmts DEDENT				{Ast.Suite (List.rev $3)}
-*/
+suite: simple_stmts_wrapper				{[$1]}
+| NEWLINE INDENT stmtlist DEDENT			{$3}
+
     
 /* everything below here returns an expr
 except testlist, which returns a list of expressions */
